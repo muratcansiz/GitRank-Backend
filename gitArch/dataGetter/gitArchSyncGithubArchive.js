@@ -1,5 +1,3 @@
-var GitArchDataGetter = require('gitArch-dataGetter');
-
 function convertDateFormatGithubArchive(date) {
     var d = date.getDate();
     var m = date.getMonth() + 1;
@@ -70,3 +68,5 @@ exports.syncGithubArchive = function syncGithubArchive(startDate) {
 function toto(blabla) {
     console.log("LINK " + blabla);
 }
+
+
