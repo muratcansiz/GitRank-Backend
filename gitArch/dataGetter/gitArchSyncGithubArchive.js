@@ -62,21 +62,41 @@ exports.syncGithubArchive = function syncGithubArchive(startDate) {
 
     // go through all days since startDate
     // days
-    while (numberOfDays >= 0) {
-        // hours
-        var numberOfHours = 24;
-        if (numberOfDays < 1) {
-            numberOfHours = (new Date().getHours());
-        }
-        while (numberOfHours > 0) {
-            downloadArchive(currentDate.getDateGAFormat());
-            numberOfHours--;
-            if (numberOfHours > 0) {
-                currentDate.incrementHour();
-            }
-        }
-        numberOfDays--;
-        currentDate.incrementDay();
+    // while (numberOfDays >= 0) {
+    //     // hours
+    //     var numberOfHours = 24;
+    //     if (numberOfDays < 1) {
+    //         numberOfHours = (new Date().getHours());
+    //     }
+    //     while (numberOfHours > 0) {
+    //         downloadArchive(currentDate.getDateGAFormat());
+    //         numberOfHours--;
+    //         if (numberOfHours > 0) {
+    //             currentDate.incrementHour();
+    //         }
+    //     }
+    //     numberOfDays--;
+    //     currentDate.incrementDay();
+    // }
+    // 
+    // 
+    recursifLauncher(4320, currentDate);
+
+    
+}
+
+function recursifLauncher(numberOfHours, currentDate) {
+    if(numberOfHours >= 0) {
+        currentDate.incrementHour();
+
+                console.log("Debug downloadArchive for " + currentDate.getDateGAFormat());
+                GitArchDataGetter.getArchive(currentDate.getDateGAFormat(), function(events) {
+                    console.log("Entries successfully retrieved: " + events.length);
+                    console.log("Pushing events.");
+                    GitDataPusherElasticModule.init();
+                    GitDataPusherElasticModule.pushEvents(events);
+                    recursifLauncher(numberOfHours--, currentDate);
+                });
     }
 }
 
