@@ -1,7 +1,6 @@
 var http = require('http');
-var gunzip = require('zlib').createGunzip();
 var fs = require('fs');
-var connectionConfig = require('./connection-config');
+var connectionConfig = require('./connectionConfig');
 
 String.prototype.trunc = String.prototype.trunc ||
       function(n){
@@ -14,6 +13,8 @@ String.prototype.trunc = String.prototype.trunc ||
 // callback: function(array of events)
 exports.getArchive = function getArchive(date, callback) {
   var options = {};
+
+
   options.method = 'GET';
   // A proxy is set
   if (connectionConfig.proxy.add != "") {
@@ -26,14 +27,16 @@ exports.getArchive = function getArchive(date, callback) {
     options.path = "/" + date + connectionConfig.extension;
   }
 
-  console.log("options.host " + options.host);
-  console.log("options.port " + options.port);
-  console.log("options.path " + options.path);
+  // console.log("options.host " + options.host);
+  // console.log("options.port " + options.port);
+  // console.log("options.path " + options.path);
 
   try {
 
     http.get(options, function(res) {
       var body = '';
+
+      var gunzip = require('zlib').createGunzip();
 
       res.pipe(gunzip);
 
@@ -43,20 +46,23 @@ exports.getArchive = function getArchive(date, callback) {
       var obj;
       gunzip.on('end', function() {
         //jsonLineDelimited = body.replace(/}{/g, '}\n{');
+        jsonLineDelimited = body.replace(/}[\s]*[\n]*[\s]*{/g, '}\n{');
         // To save the file uncomment the following
-        fs.writeFile(__dirname + "data.json", body, function(err) {
-          if(err) {
-              console.log(err);
-          } else {
-              console.log("The file was saved!");
-          }
-       });
+        // 
+       //  fs.writeFile("data.json", body, function(err) {
+       //    if(err) {
+       //        console.log(err);
+       //    } else {
+       //        console.log("The file was saved!");
+       //    }
+       // });
 
         body = '{"events":[' + body;
         body = body + ']}';
-        body = body.replace(/}{/g, '},{');
+        body = body.replace(/}[\s]*[\n]*[\s]*{/g, '},{');
         var res = JSON.parse(body);
         tab = res.events;
+          console.log("DATE !!!!!!!! " + date);
         callback.call(this, tab);
       });
     });
