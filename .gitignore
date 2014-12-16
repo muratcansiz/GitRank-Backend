@@ -1,3 +1,6 @@
 # Ignore elastic search related useless data
 /elasticsearch/elasticsearch-1.4.0/data/*
 /elasticsearch/elasticsearch-1.4.0/logs/*
+
+# Ignore elasticsearch snapshot directory
+/elasticsearch/backups/*
