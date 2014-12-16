@@ -11,13 +11,18 @@ client.search({
   body: {
     query: {
       match: {
-        language: 'JavaScript'
+        type: 'PushEvent'
       }
     }
   }
 }).then(function (resp) {
    var hits = resp.hits.hits;
-   console.log(hits.length);
+   console.log(hits[60])
+   // var i = 0;
+   // while(typeof hits[i] != 'undefined') {
+   //    console.log(hits[i]._source.payload.repository.name);
+   //    i++;
+   // }
 }, function (err) {
    console.trace(err.message);
 });
