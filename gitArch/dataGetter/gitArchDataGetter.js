@@ -3,12 +3,6 @@ var gunzip = require('zlib').createGunzip();
 var fs = require('fs');
 
 
-String.prototype.trunc = String.prototype.trunc ||
-      function(n){
-          return this.length>n ? this.substr(0,n-1)+'&hellip;' : this;
-      };
-
-
 var GitArchDataGetter = {};
 
 // Proxy settings
@@ -66,6 +60,7 @@ GitArchDataGetter.getDataFor = function(date, callback) {
         body = body.replace(/}[\s]*[\n]*[\s]*{/g, '},{');
         var res = JSON.parse(body);
         tab = res.events;
+        res = null;
         callback.call(this, tab);
       });
     });

@@ -93,9 +93,15 @@ function recursifLauncher(numberOfHours, currentDate) {
                 GitArchDataGetter.getArchive(currentDate.getDateGAFormat(), function(events) {
                     console.log("Entries successfully retrieved: " + events.length);
                     console.log("Pushing events.");
-                    GitDataPusherElasticModule.init();
-                    GitDataPusherElasticModule.pushEvents(events);
-                    recursifLauncher(numberOfHours--, currentDate);
+                    GitDataPusherElasticModule.init(function() {
+                        var fct = recursifLauncher;
+                        GitDataPusherElasticModule.pushEvents(events, function() {
+                            recursifLauncher(numberOfHours--, currentDate);
+                        }, function(errs, status, firstEventToBePushed) {
+                            console.log("FAIL");
+                            return;
+                        });
+                    });
                 });
     }
 }

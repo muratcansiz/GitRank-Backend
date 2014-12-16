@@ -8,7 +8,7 @@ var main = function() {
 
   var startDate = new Date();
   GitArchSync.syncGithubArchive();
-  
+
   //GitArchSync.syncGithubArchive();
   // GitArchDataGetter.getArchive("2012-04-11-22", function(events) {
   //   console.log("Entries successfully retrieved: " + events.length);
