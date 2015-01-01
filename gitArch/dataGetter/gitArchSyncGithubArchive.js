@@ -106,13 +106,23 @@ function recursifLauncher(numberOfHours, currentDate) {
     }
 }
 
+// @deprecated
 function downloadArchive(targetDate) {
     console.log("Debug downloadArchive for " + targetDate);
     GitArchDataGetter.getArchive(targetDate, function(events) {
         console.log("Entries successfully retrieved: " + events.length);
         console.log("Pushing events.");
         GitDataPusherElasticModule.init();
-        GitDataPusherElasticModule.pushEvents(events);
+        try{
+            GitDataPusherElasticModule.pushEvents(events);
+        }
+        catch(err) {
+            if(typeof err !== 'errorMurat') {
+                //err detected so we need to repush the events
+                
+                downloadArchive
+            }
+        }
     });
 }
 

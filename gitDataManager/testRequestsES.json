@@ -1,0 +1,214 @@
+{
+    "query" : {
+        "match" : {
+            "language" : "JavaScript"
+        }
+    }
+}
+
+
+{
+    "query": {
+        "match_all": {}
+    }
+}
+
+
+{
+	"query":{
+		"query_string":{
+			"query":"PHP",
+			"fields":["language"],
+			"limit":{"value":100}
+		}
+	}
+
+}
+
+
+{
+  "aggregations": {
+    "my_agg": {
+      "terms": {
+        "actor": "text"
+      }
+    }
+  }
+}
+
+// Aggregations
+
+{
+    "query" : {
+        "filtered" : {
+        	"filter" : {
+        		"bool" : { 
+        			"query_string" : {
+            	"query" : "PushEvent", ""
+            	"fields" : ["type", ]
+            	}}
+        	} 
+        }
+    },
+    "aggs" : {
+        "aggs_return" : { "sum" : { "field" : "size" } }
+    }
+}
+
+{
+  "query": {
+    "filtered": { 
+      "query": {
+        "match": {"language" : "JavaScript"}
+      },
+      "filter": {
+        "term": { "language" : "JavaScript" }
+      }
+    }
+  }
+}
+
+
+{
+    "query": {
+        "filtered": {
+            "query": {
+                "match_all": {}
+            },
+            "filter": {
+                "term": {
+                    "created_at": "2014-06-16T01:05:31-07:00"
+                }
+            }
+        }
+    }
+}
+
+{
+    "query": {
+        "filtered": {
+            "query": {
+                "match_all": {}
+            },
+            "filter": {
+                "query": {
+                    "match": {
+                        "repository.language": {
+                            "query": "Javascript",
+                            "fuzziness": 0
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
+
+{
+    "query": {
+        "filtered": {
+            "query": {
+                "match_all": {}
+            },
+            "filter": {
+                "query": {
+                    "match": {
+                        "repository.language": {
+                            "query": "Javascript",
+                            "fuzziness": 0
+                        },
+                        "type": {
+                            "query": "PushEvent",
+                            "fuzziness": 0
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "aggs": {
+        "LOL_RESULTS": {
+            "sum": {
+                "field": "repository.size"
+            }
+        }
+    }
+}
+
+{
+    "query": {
+        "filtered": {
+            "query": {
+                "match_all": {}
+            },
+            "filter": {
+                "query": {
+                    "bool": {
+                        "should": [
+                            {
+                                "match": {
+                                    "repository.language": {
+                                        "query": "Javascript",
+                                        "fuzziness": 0
+                                    }
+                                }
+                            },
+                            {
+                                "match": {
+                                    "type": "PushEvent"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+{
+    "aggs": {
+        "RESULTS_LOLILOL": {
+            "filter": {
+                "query": {
+                    "bool": {
+                        "must": [
+                            {
+                                "match": {
+                                    "repository.owner": {
+                                        "query": "deyandyankov",
+                                        "fuzziness": 0
+                                    }
+                                }
+                            },
+                            {
+                                "match": {
+                                    "repository.language": {
+                                        "query": "Python",
+                                        "fuzziness": 0
+                                    }
+                                }
+                            },
+                            {
+                                "match": {
+                                    "type": "PushEvent"
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "aggs": {
+                "RESULTS_LOLILOL_V2": {
+                    "sum": {
+                        "field": "payload.size"
+                    }
+                }
+            }
+        }
+    }
+}
