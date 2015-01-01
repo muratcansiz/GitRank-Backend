@@ -11,7 +11,7 @@ GitEventDataPusher.gitArchIndex = "gitarch";
 GitEventDataPusher.snapShotRepositoryName = "_gitarcheventsbackuprepository";
 GitEventDataPusher.snapShotRepositoryLocation = "C:/Users/Murat/Desktop/COURS/IC05/backend/elasticsearch/backups";
 GitEventDataPusher.snapShotName = "gitarcheventssnapshot";
-GitEventDataPusher.MAX_EVENT_PER_BULK = 1000;
+GitEventDataPusher.MAX_EVENT_PER_BULK = 10000;
 GitEventDataPusher.eventType = "event";
 //GitEventDataPusher.lastEventIp = 0;
 GitEventDataPusher.lastEventIpFile = __dirname + "/lastEventIp.json";
@@ -96,6 +96,10 @@ exports.init = function init(_onSucces, _onError) {
 
 // Add a collection of events as a single bulk
 exports.pushEvents = function pushEvents(arrayOfEvents, _onSucces, _onError) {
+  if (arrayOfEvents.length == 0) {
+    console.log("[** pushEvents **] No events to be pushed.");
+    _onSucces.call(this);
+  }
   if (!GitEventDataPusher.elasticClient) throw "GitEventDataPusher.pushEvents: call init() before performing any operation.";
   GitEventDataPusher.startBulks(arrayOfEvents, 0, _onSucces, _onError);
 
