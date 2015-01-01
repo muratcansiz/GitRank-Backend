@@ -1,0 +1,99 @@
+// récupère les push events d'un repo donné
+{
+    "query": {
+        "filtered": {
+            "query": {
+                "match_all": {}
+            },
+            "filter": {
+                "query": {
+                    "bool": {
+                        "must": [
+                            {
+                                "match": {
+                                    "type": "PushEvent"
+                                }
+                            },
+                            {
+                                "match": {
+                                    "repository.owner": {
+                                        "query": "deyandyankov",
+                                        "fuzziness": 0
+                                    }
+                                }
+                            },
+                            {
+                                "match": {
+                                    "repository.name": {
+                                        "query": "rew",
+                                        "fuzziness": 0
+                                    }
+                                }
+                            },
+                            {
+                                "match": {
+                                    "repository.language": {
+                                        "query": "Python",
+                                        "fuzziness": 0
+                                    }
+                                }
+                            }                            
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}
+
+// compte le nombre de commits pour un repo donné
+{
+    "aggs": {
+        "NB push events": {
+            "filter": {
+                "query": {
+                    "bool": {
+                        "must": [
+                            {
+                                "match": {
+                                    "repository.owner": {
+                                        "query": "deyandyankov",
+                                        "fuzziness": 0
+                                    }
+                                }
+                            },
+                            {
+                                "match": {
+                                    "repository.name": {
+                                        "query": "rew",
+                                        "fuzziness": 0
+                                    }
+                                }
+                            },
+                            {
+                                "match": {
+                                    "repository.language": {
+                                        "query": "Python",
+                                        "fuzziness": 0
+                                    }
+                                }
+                            },
+                            {
+                                "match": {
+                                    "type": "PushEvent"
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "aggs": {
+                "NB commits": {
+                    "sum": {
+                        "field": "payload.size"
+                    }
+                }
+            }
+        }
+    }
+}
