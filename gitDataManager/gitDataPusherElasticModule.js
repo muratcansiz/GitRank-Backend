@@ -96,6 +96,10 @@ exports.init = function init(_onSucces, _onError) {
 
 // Add a collection of events as a single bulk
 exports.pushEvents = function pushEvents(arrayOfEvents, _onSucces, _onError) {
+  if (arrayOfEvents.length == 0) {
+    console.log("[** pushEvents **] No events to be pushed.");
+    _onSucces.call(this);
+  }
   if (!GitEventDataPusher.elasticClient) throw "GitEventDataPusher.pushEvents: call init() before performing any operation.";
   GitEventDataPusher.startBulks(arrayOfEvents, 0, _onSucces, _onError);
 

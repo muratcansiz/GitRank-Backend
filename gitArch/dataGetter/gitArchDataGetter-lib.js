@@ -2,6 +2,19 @@ var http = require('http');
 var fs = require('fs');
 var connectionConfig = require('./connectionConfig');
 
+var eventFilter = function(event) {
+  if (event.repository) {
+    if (event.repository.language && event.repository.language == "JavaScript") {
+      return true;
+    } else {
+      return false;
+    }
+  } else {
+    return false;
+  }
+
+}
+
 String.prototype.trunc = String.prototype.trunc ||
       function(n){
           return this.length>n ? this.substr(0,n-1)+'&hellip;' : this;
@@ -61,8 +74,16 @@ exports.getArchive = function getArchive(date, callback) {
         body = body + ']}';
         body = body.replace(/}[\s]*[\n]*[\s]*{/g, '},{');
         var res = JSON.parse(body);
-        tab = res.events;
-          console.log("DATE !!!!!!!! " + date);
+        var i = 0;
+        var tab = [];
+        res.events.forEach(function(evt) {
+          if (eventFilter(evt)) {
+            tab[i] = evt;
+            i++;
+          }
+        });
+
+        console.log("DATE: " + date);
         callback.call(this, tab);
       });
     });
