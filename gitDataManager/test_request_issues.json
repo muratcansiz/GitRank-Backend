@@ -1,0 +1,121 @@
+// récupère les issues events d'un repo donné
+{
+    "query": {
+        "filtered": {
+            "query": {
+                "match_all": {}
+            },
+            "filter": {
+                "query": {
+                    "bool": {
+                        "must": [
+                            {
+                                "match": {
+                                    "type": "IssuesEvent"
+                                }
+                            },
+                            {
+                                "match": {
+                                    "repository.owner": {
+                                        "query": "ndossougbe",
+                                        "fuzziness": 0
+                                    }
+                                }
+                            },
+                            {
+                                "match": {
+                                    "repository.name": {
+                                        "query": "strapdown",
+                                        "fuzziness": 0
+                                    }
+                                }
+                            },
+                            {
+                                "match": {
+                                    "repository.language": {
+                                        "query": "JavaScript",
+                                        "fuzziness": 0
+                                    }
+                                }
+                            }                            
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}
+
+// compte le nombre de commits pour un repo donné
+{
+    "aggs": {
+        "NB push events": {
+            "filter": {
+                "query": {
+                    "bool": {
+                        "must": [
+                            {
+                                "match": {
+                                    "repository.owner": {
+                                        "query": "ndossougbe",
+                                        "fuzziness": 0
+                                    }
+                                }
+                            },
+                            {
+                                "match": {
+                                    "repository.name": {
+                                        "query": "strapdown",
+                                        "fuzziness": 0
+                                    }
+                                }
+                            },
+                            {
+                                "match": {
+                                    "repository.language": {
+                                        "query": "JavaScript",
+                                        "fuzziness": 0
+                                    }
+                                }
+                            },
+                            {
+                                "match": {
+                                    "type": "IssuesEvent"
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "aggs": {
+                "NB commits": {
+                    "sum": {
+                        "field": "payload.number"
+                    }
+                }
+            }
+        }
+    }
+}
+}
+
+
+
+{
+  "size": 0,
+  "aggs": {
+    "filtre issue.id Exists" : {
+    "filter" : {
+        "exists" : {
+            "field" : "issue.id"
+        }
+    }
+    }
+,
+    "group_by_issueId": {
+      "terms": {
+        "field": "payload.issue"
+      }
+    }
+  }
+}
