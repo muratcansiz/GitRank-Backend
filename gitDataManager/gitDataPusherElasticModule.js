@@ -1,18 +1,19 @@
 var elasticsearch = require('elasticsearch');
 var fs = require('fs');
+var GitEventDataPusherConfig = require('./gitDataPusherConfig');
 
 // Object used to push 
 var GitEventDataPusher = {};
 
 // Elastic database default conf
-GitEventDataPusher.elasticIp = "localhost";
-GitEventDataPusher.elasticPort = "9200";
-GitEventDataPusher.gitArchIndex = "gitarch";
-GitEventDataPusher.snapShotRepositoryName = "_gitarcheventsbackuprepository";
-GitEventDataPusher.snapShotRepositoryLocation = "C:/Users/Murat/Desktop/COURS/IC05/backend/elasticsearch/backups";
-GitEventDataPusher.snapShotName = "gitarcheventssnapshot";
-GitEventDataPusher.MAX_EVENT_PER_BULK = 10000;
-GitEventDataPusher.eventType = "event";
+GitEventDataPusher.elasticIp = GitEventDataPusherConfig.elasticIp;
+GitEventDataPusher.elasticPort = GitEventDataPusherConfig.elasticPort;
+GitEventDataPusher.gitArchIndex = GitEventDataPusherConfig.gitArchIndex;
+GitEventDataPusher.snapShotRepositoryName = GitEventDataPusherConfig.snapShotRepositoryName;
+GitEventDataPusher.snapShotRepositoryLocation = GitEventDataPusherConfig.snapShotRepositoryLocation;
+GitEventDataPusher.snapShotName = GitEventDataPusherConfig.snapShotName;
+GitEventDataPusher.MAX_EVENT_PER_BULK = GitEventDataPusherConfig.MAX_EVENT_PER_BULK;
+GitEventDataPusher.eventType = GitEventDataPusherConfig.eventType;
 //GitEventDataPusher.lastEventIp = 0;
 GitEventDataPusher.lastEventIpFile = __dirname + "/lastEventIp.json";
 
