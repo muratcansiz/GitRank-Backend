@@ -2,14 +2,16 @@
  * Class used to handle basic errors.
  */
 
-exports.GITHUB_ARCHIVE_DOWNLOAD_ERROR = "GITHUB_ARCHIVE_DOWNLOAD_ERROR";
-exports.GITHUB_ARCHIVE_DOWNLOAD_ERROR = "GITHUB_ARCHIVE_DOWNLOAD_ERROR";
 
-exports.function (errorType, errorText) {
+var Error = function (errorType, errorText) {
 	this.errType = errorType;
 	this.errText = errorText;
 }
+Error.GITHUB_ARCHIVE_DOWNLOAD_ERROR = "GITHUB_ARCHIVE_DOWNLOAD_ERROR";
+Error.GITHUB_ARCHIVE_GUNZIP_ERROR = "GITHUB_ARCHIVE_GUNZIP_ERROR";
 
-exports.prototype.toString() = function() {
-	return("Error type:" + errType + "\n" + "Description:" + errText);
+Error.prototype.toString = function() {
+	return("Error type:" + this.errType + "\n" + "Description:" + this.errText);
 }
+
+module.exports = Error;

@@ -102,7 +102,7 @@ function recursifLauncher(numberOfHours, currentDate) {
                             return;
                         });
                     });
-                });
+                }, function(err) {console.log(err.toString());});
     }
 }
 

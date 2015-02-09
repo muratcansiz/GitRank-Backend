@@ -1,6 +1,7 @@
 var http = require('http');
 var fs = require('fs');
 var connectionConfig = require('./connectionConfig');
+var Error = require('../../dataModel/errors/simpleError.js');
 
 var eventFilter = function(event) {
   if (event.repository) {
@@ -24,7 +25,7 @@ String.prototype.trunc = String.prototype.trunc ||
 // date: {Year}-{Month}-{Day}-{Hour}
 // example: 2012-04-11-15
 // callback: function(array of events)
-exports.getArchive = function getArchive(date, callback) {
+exports.getArchive = function getArchive(date, successCallback, errorCallback) {
   var options = {};
 
 
@@ -43,8 +44,6 @@ exports.getArchive = function getArchive(date, callback) {
   // console.log("options.host " + options.host);
   // console.log("options.port " + options.port);
   // console.log("options.path " + options.path);
-
-  try {
 
     http.get(options, function(res) {
       var body = '';
@@ -84,9 +83,13 @@ exports.getArchive = function getArchive(date, callback) {
         });
 
         console.log("DATE: " + date);
-        callback.call(this, tab);
+        successCallback.call(this, tab);
       });
-    });
-  } catch (e) {console.log(e)}
 
+      gunzip.on('error', function() {
+        errorCallback.call(this, new Error(Error.GITHUB_ARCHIVE_GUNZIP_ERROR, ""));
+      });
+    }).on('error', function(e) {
+      errorCallback.call(this, new Error(Error.GITHUB_ARCHIVE_DOWNLOAD_ERROR, e));
+    });
 } 
