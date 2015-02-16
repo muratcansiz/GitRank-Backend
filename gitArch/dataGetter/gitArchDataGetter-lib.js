@@ -1,7 +1,7 @@
 var http = require('http');
 var fs = require('fs');
 var connectionConfig = require('./connectionConfig');
-var Error = require('../../dataModel/errors/simpleError.js');
+var Error = require('../../dataModel/errors/SimpleError.js');
 
 var eventFilter = function(event) {
   if (event.repository) {
@@ -87,9 +87,9 @@ exports.getArchive = function getArchive(date, successCallback, errorCallback) {
       });
 
       gunzip.on('error', function() {
-        errorCallback.call(this, new Error(Error.GITHUB_ARCHIVE_GUNZIP_ERROR, ""));
+        errorCallback.call(this, new Error(Error.type.GITHUB_ARCHIVE_GUNZIP_ERROR, ""));
       });
     }).on('error', function(e) {
-      errorCallback.call(this, new Error(Error.GITHUB_ARCHIVE_DOWNLOAD_ERROR, e));
+      errorCallback.call(this, new Error(Error.type.GITHUB_ARCHIVE_DOWNLOAD_ERROR, e));
     });
 } 

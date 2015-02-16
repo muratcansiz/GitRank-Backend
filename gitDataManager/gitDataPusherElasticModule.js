@@ -1,6 +1,9 @@
 var elasticsearch = require('elasticsearch');
 var fs = require('fs');
 var GitEventDataPusherConfig = require('./gitDataPusherConfig');
+var Error = require('../dataModel/errors/SimpleError.js');
+var PushError = require('../dataModel/errors/PushError.js');
+
 
 // Object used to push 
 var GitEventDataPusher = {};
@@ -33,7 +36,7 @@ exports.init = function init(_onSucces, _onError) {
     hello: "elasticsearch!"
   }, function (error) {
     if (error) {
-      throw 'Elasticsearch cluster is down:' + error;
+      _onError.call(this, new Error(Error.ELASTIC_IS_DOWN, "Elastic search is not responding after timeout."));
     } else {
       console.log('Elasticsearch cluster is well.');
       // Checking if the snapshot exist
@@ -53,7 +56,7 @@ exports.init = function init(_onSucces, _onError) {
               }
             }, function(err, response, status) {
               if(err) {
-                throw "Snapshot repository couldn't be created, error: "+ err;
+                _onError.call(this, new Error(Error.type.ELASTIC_CANNOT_CREATE_SNAPSHOT_REPOSITORY, "" + err));
               } else {
                 console.log("Created repository, status: " + status);
                 _onSucces.call(this)
@@ -67,7 +70,7 @@ exports.init = function init(_onSucces, _onError) {
             }, function(err, response, status) {
               if (err) {
                 console.log("[** GitEventDataPusher.startBulks **] ini(), unexpected:\n" + err.toString());
-                _onError.call(self, err, "UNEXPECTED");
+                _onError.call(this, new Error(Error.type.ELASTIC_CANNOT_DELETE_SNAPSHOT, "" + err));
               } else {
                 // Creating the snapshot repository
                 GitEventDataPusher.elasticClient.snapshot.createRepository({
@@ -79,7 +82,7 @@ exports.init = function init(_onSucces, _onError) {
                   }
                 }, function(err, response, status) {
                   if(err) {
-                    throw "Snapshot repository couldn't be created, error: "+ err;
+                    _onError.call(this, new Error(Error.type.ELASTIC_CANNOT_CREATE_SNAPSHOT_REPOSITORY, "" + err));
                   } else {
                     console.log("Created repository, status: " + status);
                     _onSucces.call(this)
@@ -101,7 +104,7 @@ exports.pushEvents = function pushEvents(arrayOfEvents, _onSucces, _onError) {
     console.log("[** pushEvents **] No events to be pushed.");
     _onSucces.call(this);
   }
-  if (!GitEventDataPusher.elasticClient) throw "GitEventDataPusher.pushEvents: call init() before performing any operation.";
+  if (!GitEventDataPusher.elasticClient) _onError.call(this, new Error(Error.type.GIT_DATA_PUSHER_CALL_INIT_FIRST, ""));
   GitEventDataPusher.startBulks(arrayOfEvents, 0, _onSucces, _onError);
 
 }
@@ -111,7 +114,7 @@ GitEventDataPusher.startBulks = function (events, start, _onSucces, _onError) {
   var i  = start;
   var reducedEvents = [];
 
-  if (start >= start.length) {
+  if (start >= events.length) {
     return;
   }
 
@@ -132,11 +135,10 @@ GitEventDataPusher.startBulks = function (events, start, _onSucces, _onError) {
     } else {
       GitEventDataPusher.startBulks(this.allEvents, this.originOffset, _onSucces, _onError);
     }
-  }, function(errs, status, firstEventToBePushed) {
-    _onError.call(this, errs, status, firstEventToBePushed);
+  }, function(error) {
+    _onError.call(this, error);
   });
 };
-
 
 
 GitEventDataPusher.EventBulkManager = function(allEvts, evts, client, withRetry, offSt) {
@@ -173,7 +175,8 @@ GitEventDataPusher.EventBulkManager.prototype.startBulk = function(_onSucces, _o
   }, function(err, response, status) {
     if (err) {
       console.log("[** GitEventDataPusher.startBulks **] Couldn't create the snapshot, status: " + status + " \n" + err.toString());
-      _onError.call(self, err, self.originOffset);
+      // _onError.call(self, err, self.originOffset);
+      _onError.call(self, new PushError(self.originOffset, "Couldn't create the snapshot" + err.toString()));
     } else {
       self.elasticClient.bulk({
         type: GitEventDataPusher.eventType,
@@ -189,14 +192,16 @@ GitEventDataPusher.EventBulkManager.prototype.startBulk = function(_onSucces, _o
           }, function(err, response, status) {
             if (err) {
               console.log("[** GitEventDataPusher.startBulks **] Couldn't restore the snapshot:\n" + err.toString());
-              _onError.call(self, err, self.originOffset);
+              // _onError.call(self, err, self.originOffset);
+              _onError.call(self, new PushError(self.originOffset, "Couldn't restore the snapshot:" + err.toString()));
             } else {
               if (self.startedBulks < GitEventDataPusher.EventBulkManager.MAX_RETRY_ATTEMPT) {
                 self.startedBulks ++;
                 self.startBulk(_onSucces, _onError)
               } else {
                 console.log("[** GitEventDataPusher.startBulks **] Max retry attempt reached, aborting.");
-                _onError.call(self, err, self.originOffset);
+                // _onError.call(self, err, self.originOffset);
+                _onError.call(self,  new PushError(self.originOffset, "Max retry attempt reached, aborting."));
               } 
             }
           });
@@ -209,7 +214,8 @@ GitEventDataPusher.EventBulkManager.prototype.startBulk = function(_onSucces, _o
           }, function(err, response, status) {
             if (err) {
               console.log("[** GitEventDataPusher.startBulks **] Couldn't delete the snapshot:\n" + err.toString());
-              _onError.call(self, err, self.originOffset);
+              // _onError.call(self, err, self.originOffset);
+              _onError.call(self, new PushError(self.originOffset, "Couldn't delete the snapshot:" + err.toString()));
             } else {
               _onSucces.call(self);
             }

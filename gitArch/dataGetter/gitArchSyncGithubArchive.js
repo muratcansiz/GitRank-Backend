@@ -97,8 +97,11 @@ function recursifLauncher(numberOfHours, currentDate) {
                         var fct = recursifLauncher;
                         GitDataPusherElasticModule.pushEvents(events, function() {
                             recursifLauncher(numberOfHours--, currentDate);
-                        }, function(errs, status, firstEventToBePushed) {
-                            console.log("FAIL");
+                        }, function(err) {
+                            console.log("FAIL:\n");
+                            if (err) {
+                                console.log("" + err.toString());
+                            }
                             return;
                         });
                     });
