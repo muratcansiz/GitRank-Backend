@@ -3,6 +3,7 @@ var fs = require('fs');
 var GitEventDataPusherConfig = require('./gitDataPusherConfig');
 var Error = require('../dataModel/errors/SimpleError.js');
 var PushError = require('../dataModel/errors/PushError.js');
+var LOGGER = require('./util.js');
 
 
 // Object used to push 
@@ -39,6 +40,7 @@ exports.init = function init(_onSucces, _onError) {
       _onError.call(this, new Error(Error.ELASTIC_IS_DOWN, "Elastic search is not responding after timeout."));
     } else {
       console.log('Elasticsearch cluster is well.');
+      LOGGER.logGitRank('Elasticsearch cluster is well.');
       // Checking if the snapshot exist
       GitEventDataPusher.elasticClient.snapshot.get({
           repository: GitEventDataPusher.snapShotRepositoryName,
@@ -59,6 +61,7 @@ exports.init = function init(_onSucces, _onError) {
                 _onError.call(this, new Error(Error.type.ELASTIC_CANNOT_CREATE_SNAPSHOT_REPOSITORY, "" + err));
               } else {
                 console.log("Created repository, status: " + status);
+                LOGGER.logGitRank("Created repository, status: " + status);
                 _onSucces.call(this)
               }
             });
@@ -70,6 +73,7 @@ exports.init = function init(_onSucces, _onError) {
             }, function(err, response, status) {
               if (err) {
                 console.log("[** GitEventDataPusher.startBulks **] ini(), unexpected:\n" + err.toString());
+                LOGGER.logGitRank("[** GitEventDataPusher.startBulks **] ini(), unexpected:\n" + err.toString());
                 _onError.call(this, new Error(Error.type.ELASTIC_CANNOT_DELETE_SNAPSHOT, "" + err));
               } else {
                 // Creating the snapshot repository
@@ -85,6 +89,7 @@ exports.init = function init(_onSucces, _onError) {
                     _onError.call(this, new Error(Error.type.ELASTIC_CANNOT_CREATE_SNAPSHOT_REPOSITORY, "" + err));
                   } else {
                     console.log("Created repository, status: " + status);
+                    LOGGER.logGitRank("Created repository, status: " + status);
                     _onSucces.call(this)
                   }
                 }); 
@@ -102,6 +107,7 @@ exports.init = function init(_onSucces, _onError) {
 exports.pushEvents = function pushEvents(arrayOfEvents, _onSucces, _onError) {
   if (arrayOfEvents.length == 0) {
     console.log("[** pushEvents **] No events to be pushed.");
+    LOGGER.logGitRank("[** pushEvents **] No events to be pushed.");
     _onSucces.call(this);
   }
   if (!GitEventDataPusher.elasticClient) _onError.call(this, new Error(Error.type.GIT_DATA_PUSHER_CALL_INIT_FIRST, ""));
@@ -131,6 +137,7 @@ GitEventDataPusher.startBulks = function (events, start, _onSucces, _onError) {
   bulker.startBulk(function() {
     if (this.originOffset + GitEventDataPusher.MAX_EVENT_PER_BULK >= this.allEvents.length) {
       console.log("[** GitEventDataPusher.startBulks **] Successful last bulk, calling _onSucces");
+      LOGGER.logGitRank("[** GitEventDataPusher.startBulks **] Successful last bulk, calling _onSucces");
       _onSucces.call(this);
     } else {
       GitEventDataPusher.startBulks(this.allEvents, this.originOffset, _onSucces, _onError);
@@ -175,6 +182,7 @@ GitEventDataPusher.EventBulkManager.prototype.startBulk = function(_onSucces, _o
   }, function(err, response, status) {
     if (err) {
       console.log("[** GitEventDataPusher.startBulks **] Couldn't create the snapshot, status: " + status + " \n" + err.toString());
+      LOGGER.logGitRank("[** GitEventDataPusher.startBulks **] Couldn't create the snapshot, status: " + status + " \n" + err.toString());
       // _onError.call(self, err, self.originOffset);
       _onError.call(self, new PushError(self.originOffset, "Couldn't create the snapshot" + err.toString()));
     } else {
@@ -192,6 +200,7 @@ GitEventDataPusher.EventBulkManager.prototype.startBulk = function(_onSucces, _o
           }, function(err, response, status) {
             if (err) {
               console.log("[** GitEventDataPusher.startBulks **] Couldn't restore the snapshot:\n" + err.toString());
+              LOGGER.logGitRank("[** GitEventDataPusher.startBulks **] Couldn't restore the snapshot:\n" + err.toString());
               // _onError.call(self, err, self.originOffset);
               _onError.call(self, new PushError(self.originOffset, "Couldn't restore the snapshot:" + err.toString()));
             } else {
@@ -200,6 +209,7 @@ GitEventDataPusher.EventBulkManager.prototype.startBulk = function(_onSucces, _o
                 self.startBulk(_onSucces, _onError)
               } else {
                 console.log("[** GitEventDataPusher.startBulks **] Max retry attempt reached, aborting.");
+                LOGGER.logGitRank("[** GitEventDataPusher.startBulks **] Max retry attempt reached, aborting.");
                 // _onError.call(self, err, self.originOffset);
                 _onError.call(self,  new PushError(self.originOffset, "Max retry attempt reached, aborting."));
               } 
@@ -207,6 +217,7 @@ GitEventDataPusher.EventBulkManager.prototype.startBulk = function(_onSucces, _o
           });
         } else {
           console.log("[** GitEventDataPusher.startBulks **] Bulk done successfully");
+          LOGGER.logGitRank("[** GitEventDataPusher.startBulks **] Bulk done successfully");
           self.elasticClient.snapshot.delete({
             method: "DELETE",
             repository: GitEventDataPusher.snapShotRepositoryName,
@@ -214,6 +225,7 @@ GitEventDataPusher.EventBulkManager.prototype.startBulk = function(_onSucces, _o
           }, function(err, response, status) {
             if (err) {
               console.log("[** GitEventDataPusher.startBulks **] Couldn't delete the snapshot:\n" + err.toString());
+              LOGGER.logGitRank("[** GitEventDataPusher.startBulks **] Couldn't delete the snapshot:\n" + err.toString());
               // _onError.call(self, err, self.originOffset);
               _onError.call(self, new PushError(self.originOffset, "Couldn't delete the snapshot:" + err.toString()));
             } else {
