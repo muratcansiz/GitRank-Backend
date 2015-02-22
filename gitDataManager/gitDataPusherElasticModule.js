@@ -133,14 +133,15 @@ GitEventDataPusher.startBulks = function (events, start, _onSucces, _onError) {
   }
 
   var bulker = new GitEventDataPusher.EventBulkManager(events, reducedEvents,
-     GitEventDataPusher.elasticClient, true, i);
+     GitEventDataPusher.elasticClient, true, start);
   bulker.startBulk(function() {
     if (this.originOffset + GitEventDataPusher.MAX_EVENT_PER_BULK >= this.allEvents.length) {
       console.log("[** GitEventDataPusher.startBulks **] Successful last bulk, calling _onSucces");
       LOGGER.logGitRank("[** GitEventDataPusher.startBulks **] Successful last bulk, calling _onSucces");
       _onSucces.call(this);
     } else {
-      GitEventDataPusher.startBulks(this.allEvents, this.originOffset, _onSucces, _onError);
+      GitEventDataPusher.startBulks(this.allEvents, this.originOffset + GitEventDataPusher.MAX_EVENT_PER_BULK
+        , _onSucces, _onError);
     }
   }, function(error) {
     _onError.call(this, error);
